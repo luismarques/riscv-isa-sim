@@ -29,12 +29,12 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
              const std::vector<std::string>& args,
              std::vector<int> const hartids, unsigned progsize,
              unsigned max_bus_master_bits, bool require_authentication,
-             suseconds_t abstract_delay_usec)
+             suseconds_t abstract_delay_usec, cycle_info_t* cycle_info)
   : htif_t(args), mems(mems), procs(std::max(nprocs, size_t(1))),
     start_pc(start_pc), current_step(0), current_proc(0), debug(false),
     histogram_enabled(false), dtb_enabled(true), remote_bitbang(NULL),
     debug_module(this, progsize, max_bus_master_bits, require_authentication,
-        abstract_delay_usec)
+    abstract_delay_usec)
 {
   signal(SIGINT, &handle_signal);
 
@@ -47,7 +47,7 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
 
   if (hartids.size() == 0) {
     for (size_t i = 0; i < procs.size(); i++) {
-      procs[i] = new processor_t(isa, this, i, halted);
+      procs[i] = new processor_t(isa, this, cycle_info, i, halted);
     }
   }
   else {
@@ -56,7 +56,7 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
       exit(1);
     }
     for (size_t i = 0; i < procs.size(); i++) {
-      procs[i] = new processor_t(isa, this, hartids[i], halted);
+      procs[i] = new processor_t(isa, this, cycle_info, hartids[i], halted);
     }
   }
 
